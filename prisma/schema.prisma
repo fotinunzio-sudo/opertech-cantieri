@@ -6,9 +6,22 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Resource {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  cost      Float?
+  createdAt DateTime @default(now())
+
+  reports    Report[] @relation("ReportResources")
+}
+
 model Report {
-  id          Int        @id @default(autoincrement())
+  id          String     @id @default(cuid())
   date        String
   description String?
-  resources   Resource[]
+  createdAt   DateTime   @default(now())
+
+  resources   Resource[] @relation("ReportResources")
 }
