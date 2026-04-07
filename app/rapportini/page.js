@@ -1,153 +1,75 @@
 "use client";
-import { useState } from "react";
 
-export default function Rapportino() {
-  const [data, setData] = useState({
-    data: "",
-    cantiere: "",
-    risorse: [],
-    materiali: [],
-    note: ""
-  });
+import { useEffect, useState } from "react";
 
-  const risorseDisponibili = [
-    "Operaio Mario Rossi",
-    "Escavatore CAT 320",
-    "Autocarro Iveco"
-  ];
+export default function Rapportini() {
+  const [resources, setResources] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const [date, setDate] = useState("");
+  const [desc, setDesc] = useState("");
 
-  const materialiDisponibili = [
-    "Calcestruzzo",
-    "Rete metallica",
-    "Bulloni"
-  ];
+  useEffect(() => {
+    fetch("/api/resources")
+      .then((res) => res.json())
+      .then(setResources);
+  }, []);
 
-  const toggleSelezione = (tipo, valore) => {
-    setData((prev) => {
-      const lista = prev[tipo];
-      return {
-        ...prev,
-        [tipo]: lista.includes(valore)
-          ? lista.filter((v) => v !== valore)
-          : [...lista, valore]
-      };
+  function toggleResource(id) {
+    setSelected((prev) =>
+      prev.includes(id)
+        ? prev.filter((r) => r !== id)
+        : [...prev, id]
+    );
+  }
+
+  async function submit() {
+    await fetch("/api/rapportini", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        date,
+        description: desc,
+        resourceIds: selected
+      })
     });
-  };
 
-  const submit = () => {
-    console.log("RAPPORTINO:", data);
-    alert("Rapportino salvato (mock)");
-  };
+    alert("Rapportino salvato");
+    setSelected([]);
+  }
 
   return (
-    <main style={styles.container}>
-      <h1>📋 Rapportino Giornaliero</h1>
+    <div style={{ padding: 20 }}>
+      <h1>Rapportino</h1>
 
-      {/* DATA */}
       <input
         type="date"
-        style={styles.input}
-        onChange={(e) => setData({ ...data, data: e.target.value })}
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
       />
 
-      {/* CANTIERE */}
       <input
-        placeholder="Nome cantiere"
-        style={styles.input}
-        onChange={(e) => setData({ ...data, cantiere: e.target.value })}
+        placeholder="Descrizione lavori"
+        value={desc}
+        onChange={(e) => setDesc(e.target.value)}
       />
 
-      {/* RISORSE */}
-      <Section title="👷 Risorse">
-        {risorseDisponibili.map((r) => (
-          <Checkbox
-            key={r}
-            label={r}
-            checked={data.risorse.includes(r)}
-            onChange={() => toggleSelezione("risorse", r)}
-          />
-        ))}
-      </Section>
+      <h3>Risorse impiegate</h3>
 
-      {/* MATERIALI */}
-      <Section title="📦 Materiali">
-        {materialiDisponibili.map((m) => (
-          <Checkbox
-            key={m}
-            label={m}
-            checked={data.materiali.includes(m)}
-            onChange={() => toggleSelezione("materiali", m)}
-          />
-        ))}
-      </Section>
+      {resources.map((r) => (
+        <div key={r.id}>
+          <label>
+            <input
+              type="checkbox"
+              onChange={() => toggleResource(r.id)}
+            />
+            {r.name} ({r.type})
+          </label>
+        </div>
+      ))}
 
-      {/* NOTE */}
-      <textarea
-        placeholder="Note lavorazioni..."
-        style={styles.textarea}
-        onChange={(e) => setData({ ...data, note: e.target.value })}
-      />
-
-      <button onClick={submit} style={styles.button}>
-        💾 Salva Rapportino
-      </button>
-    </main>
-  );
-}
-
-/* COMPONENTI */
-
-function Section({ title, children }) {
-  return (
-    <div style={styles.section}>
-      <h3>{title}</h3>
-      {children}
+      <button onClick={submit}>Salva rapportino</button>
     </div>
   );
 }
-
-function Checkbox({ label, checked, onChange }) {
-  return (
-    <label style={styles.checkbox}>
-      <input type="checkbox" checked={checked} onChange={onChange} />
-      {label}
-    </label>
-  );
-}
-
-/* STILI */
-
-const styles = {
-  container: {
-    padding: "30px",
-    maxWidth: "600px",
-    margin: "auto",
-    fontFamily: "Arial"
-  },
-  input: {
-    display: "block",
-    width: "100%",
-    padding: "10px",
-    marginBottom: "15px"
-  },
-  textarea: {
-    width: "100%",
-    height: "100px",
-    marginTop: "15px"
-  },
-  section: {
-    marginBottom: "20px"
-  },
-  checkbox: {
-    display: "block",
-    marginBottom: "5px"
-  },
-  button: {
-    marginTop: "20px",
-    padding: "10px",
-    background: "#2e7d32",
-    color: "white",
-    border: "none",
-    cursor: "pointer"
-  }
-};
