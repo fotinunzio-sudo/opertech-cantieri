@@ -90,6 +90,7 @@ export default function ResourcesPage() {
             <th>Nome</th>
             <th>Tipo</th>
             <th>Costo</th>
+    <th>Giacenza</th>
           </tr>
         </thead>
         <tbody>
