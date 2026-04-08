@@ -8,15 +8,29 @@ export default function ReceiptsPage() {
   const [description, setDescription] = useState("");
   const [commesse, setCommesse] = useState([]);
   const [commessaId, setCommessaId] = useState("");
+  const [receipts, setReceipts] = useState([]);
+
+  async function loadData() {
+    const [c, r] = await Promise.all([
+      fetch("/api/commesse").then(res => res.json()),
+      fetch("/api/receipts").then(res => res.json())
+    ]);
+
+    setCommesse(c);
+    setReceipts(r);
+  }
 
   useEffect(() => {
-    fetch("/api/commesse")
-      .then(res => res.json())
-      .then(setCommesse);
+    loadData();
   }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (!file) {
+      alert("Seleziona un file");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("file", file);
@@ -39,15 +53,19 @@ export default function ReceiptsPage() {
     setDescription("");
     setCommessaId("");
 
-    alert("Scontrino registrato");
+    loadData();
   }
 
   return (
     <div style={{ padding: 24 }}>
-      <h1>Carica scontrino</h1>
+      <h1>Scontrini</h1>
 
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+      {/* FORM */}
+      <form onSubmit={handleSubmit} style={{ marginBottom: 30 }}>
+        <input
+          type="file"
+          onChange={(e) => setFile(e.target.files[0])}
+        />
 
         <input
           type="number"
@@ -76,6 +94,41 @@ export default function ReceiptsPage() {
 
         <button>Carica</button>
       </form>
+
+      {/* LISTA SCONTRINI */}
+      <h2>Archivio scontrini</h2>
+
+      {receipts.length === 0 && <p>Nessuno scontrino</p>}
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+        {receipts.map((r) => (
+          <div
+            key={r.id}
+            style={{
+              border: "1px solid #ccc",
+              padding: 10,
+              background: "#fff",
+              width: 220
+            }}
+          >
+            <img
+              src={r.fileUrl}
+              alt="scontrino"
+              style={{ width: "100%", height: 150, objectFit: "cover" }}
+            />
+
+            <div style={{ marginTop: 10 }}>
+              <strong>€ {r.amount}</strong>
+              <br />
+              {r.description || "-"}
+              <br />
+              <small>
+                {r.commessa ? r.commessa.name : "Senza commessa"}
+              </small>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
