@@ -1,6 +1,15 @@
 import { prisma } from "../../../lib/prisma";
 import cloudinary from "../../../lib/cloudinary";
 
+export async function GET() {
+  const data = await prisma.receipt.findMany({
+    include: { commessa: true },
+    orderBy: { createdAt: "desc" }
+  });
+
+  return Response.json(data);
+}
+
 export async function POST(req) {
   const formData = await req.formData();
 
