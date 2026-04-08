@@ -24,13 +24,18 @@ export default function CommessePage() {
       return;
     }
 
-    await fetch("/api/commesse", {
+    const res = await fetch("/api/commesse", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(form)
     });
+
+    if (!res.ok) {
+      alert("Errore salvataggio commessa");
+      return;
+    }
 
     setForm({ name: "", description: "" });
     loadCommesse();
@@ -40,7 +45,10 @@ export default function CommessePage() {
     <div style={{ padding: 24 }}>
       <h1>Commesse</h1>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: 20, display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ marginBottom: 20, display: "flex", gap: 8, flexWrap: "wrap" }}
+      >
         <input
           placeholder="Nome commessa"
           value={form.name}
