@@ -23,7 +23,10 @@ model Report {
   description String?
   createdAt   DateTime @default(now())
 
-  resources ReportResource[]
+  commessaId  String?
+  commessa    Commessa? @relation(fields: [commessaId], references: [id])
+
+  resources   ReportResource[]
 }
 
 model ReportResource {
