@@ -16,7 +16,17 @@ model Commessa {
 
   reports     Report[]
 }
+model Invoice {
+  id          String   @id @default(cuid())
+  commessaId  String
+  commessa    Commessa @relation(fields: [commessaId], references: [id])
 
+  amount      Float
+  date        DateTime @default(now())
+  description String?
+
+  createdAt   DateTime @default(now())
+}
 model Resource {
   id        String   @id @default(cuid())
   name      String
