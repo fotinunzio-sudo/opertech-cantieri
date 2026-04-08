@@ -10,12 +10,26 @@ export default function ReceiptsPage() {
   const [commessaId, setCommessaId] = useState("");
   const [receipts, setReceipts] = useState([]);
 
-  async function loadData() {
+    async function loadData() {
     const [c, r] = await Promise.all([
       fetch("/api/commesse").then(res => res.json()),
       fetch("/api/receipts").then(res => res.json())
     ]);
 
+    async function runOCR(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("/api/ocr", {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+
+  if (data.amount) setAmount(data.amount);
+  if (data.date) console.log("Data OCR:", data.date);
+}
     setCommesse(c);
     setReceipts(r);
   }
