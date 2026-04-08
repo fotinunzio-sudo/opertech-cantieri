@@ -27,6 +27,7 @@ export default function RapportiniPage() {
   useEffect(() => {
     loadResources();
     loadReports();
+    loadCommesse();
   }, []);
 
   function toggleResource(id) {
@@ -44,7 +45,11 @@ export default function RapportiniPage() {
       alert("Inserisci la data");
       return;
     }
-
+async function loadCommesse() {
+  const res = await fetch("/api/commesse");
+  const data = await res.json();
+  setCommesse(data);
+}
     const res = await fetch("/api/rapportini", {
       method: "POST",
       headers: {
