@@ -64,3 +64,14 @@ model ReportResource {
   @@index([reportId])
   @@index([resourceId])
 }
+model Ledger {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  type        String   // ENTRATA / USCITA
+  description String
+  amount      Float
+  commessaId  String?
+  commessa    Commessa? @relation(fields: [commessaId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
