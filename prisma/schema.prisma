@@ -1,3 +1,12 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model Resource {
   id        String   @id @default(cuid())
   name      String
@@ -18,15 +27,13 @@ model Report {
 }
 
 model ReportResource {
-  id          String  @id @default(cuid())
+  id         String   @id @default(cuid())
+  reportId   String
+  resourceId String
+  quantity   Float
+  unitCost   Float
+  totalCost  Float
 
-  reportId    String
-  resourceId  String
-
-  quantity    Float
-  unitCost    Float
-  totalCost   Float
-
-  report      Report   @relation(fields: [reportId], references: [id])
-  resource    Resource @relation(fields: [resourceId], references: [id])
+  report     Report   @relation(fields: [reportId], references: [id])
+  resource   Resource @relation(fields: [resourceId], references: [id])
 }
