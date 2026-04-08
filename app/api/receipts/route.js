@@ -1,4 +1,5 @@
 import { prisma } from "../../../lib/prisma";
+import cloudinary from "../../../lib/cloudinary";
 
 export async function POST(req) {
   const formData = await req.formData();
@@ -8,10 +9,28 @@ export async function POST(req) {
   const description = formData.get("description");
   const commessaId = formData.get("commessaId");
 
-  // ⚠️ per ora salviamo solo nome file (demo)
-  const fileUrl = file?.name || "scontrino.jpg";
+  if (!file) {
+    return Response.json({ error: "File mancante" }, { status: 400 });
+  }
 
-  // 1️⃣ salva scontrino
+  // convert file in buffer
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+
+  // upload Cloudinary
+  const upload = await new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      { folder: "scontrini" },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      }
+    ).end(buffer);
+  });
+
+  const fileUrl = upload.secure_url;
+
+  // salva DB
   const receipt = await prisma.receipt.create({
     data: {
       fileUrl,
@@ -21,7 +40,7 @@ export async function POST(req) {
     }
   });
 
-  // 2️⃣ crea movimento prima nota AUTOMATICO
+  // crea prima nota automatica
   await prisma.ledger.create({
     data: {
       date: new Date(),
