@@ -12,9 +12,11 @@ export default function CommessePage() {
     setCommesse(data);
   }
 
-  useEffect(() => {
-    loadCommesse();
-  }, []);
+ useEffect(() => {
+  fetch("/api/commesse")
+    .then(res => res.json())
+    .then(setCommesse);
+}, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
