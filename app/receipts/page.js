@@ -10,28 +10,31 @@ export default function ReceiptsPage() {
   const [commessaId, setCommessaId] = useState("");
   const [receipts, setReceipts] = useState([]);
 
-    async function loadData() {
+  async function loadData() {
     const [c, r] = await Promise.all([
-      fetch("/api/commesse").then(res => res.json()),
-      fetch("/api/receipts").then(res => res.json())
+      fetch("/api/commesse").then((res) => res.json()),
+      fetch("/api/receipts").then((res) => res.json())
     ]);
 
-    async function runOCR(file) {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("/api/ocr", {
-    method: "POST",
-    body: formData
-  });
-
-  const data = await res.json();
-
-  if (data.amount) setAmount(data.amount);
-  if (data.date) console.log("Data OCR:", data.date);
-}
     setCommesse(c);
     setReceipts(r);
+  }
+
+  async function runOCR(selectedFile) {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    const res = await fetch("/api/ocr", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (data.amount) setAmount(String(data.amount));
+    if (data.date) console.log("Data OCR:", data.date);
   }
 
   useEffect(() => {
@@ -74,11 +77,16 @@ export default function ReceiptsPage() {
     <div style={{ padding: 24 }}>
       <h1>Scontrini</h1>
 
-      {/* FORM */}
       <form onSubmit={handleSubmit} style={{ marginBottom: 30 }}>
         <input
           type="file"
-          onChange={(e) => setFile(e.target.files[0])}
+          onChange={(e) => {
+            const selectedFile = e.target.files?.[0];
+            setFile(selectedFile || null);
+            if (selectedFile) {
+              runOCR(selectedFile);
+            }
+          }}
         />
 
         <input
@@ -106,10 +114,9 @@ export default function ReceiptsPage() {
           ))}
         </select>
 
-        <button>Carica</button>
+        <button type="submit">Carica</button>
       </form>
 
-      {/* LISTA SCONTRINI */}
       <h2>Archivio scontrini</h2>
 
       {receipts.length === 0 && <p>Nessuno scontrino</p>}
