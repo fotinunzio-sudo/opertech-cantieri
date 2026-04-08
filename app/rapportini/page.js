@@ -30,10 +30,10 @@ export default function RapportiniPage() {
   }
 
   useEffect(() => {
-    loadResources();
-    loadReports();
-    loadCommesse();
-  }, []);
+  fetch("/api/rapportini")
+    .then(res => res.json())
+    .then(setReports);
+}, []);
 
   function toggleResource(resource) {
     setSelectedResources((prev) => {
