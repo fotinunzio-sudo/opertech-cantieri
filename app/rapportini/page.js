@@ -65,11 +65,9 @@ export default function RapportiniPage() {
     }));
   }
 
-  const total = useMemo(() => {
-    return Object.values(selectedResources).reduce(
-      (sum, r) => sum + r.quantity * r.unitCost,
-      0
-    );
+ const totale = reports.reduce((sum, r) => {
+  return sum + r.resources.reduce((s, res) => s + res.totalCost, 0);
+}, 0);
   }, [selectedResources]);
 
   async function handleSubmit(e) {
