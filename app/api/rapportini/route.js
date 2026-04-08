@@ -35,7 +35,7 @@ for (const r of body.resources) {
     await prisma.resource.update({
       where: { id: r.id },
       data: {
-        stock: (resource.stock || 0) - r.quantity
+        stock: form.stock ? parseFloat(form.stock) : null
       }
     });
   }
