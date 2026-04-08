@@ -20,63 +20,83 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  // 🔥 COSTI PER COMMESSA
-  const costiPerCommessa = useMemo(() => {
+  const data = useMemo(() => {
     const map = {};
 
-    reports.forEach((r) => {
-      const commessaId = r.commessa?.id || "senza";
+    // inizializza
+    commesse.forEach(c => {
+      map[c.id] = {
+        name: c.name,
+        budget: c.budget || 0,
+        cost: 0
+      };
+    });
 
-      const costoReport = r.resources.reduce(
-        (sum, res) => sum + res.totalCost,
+    // somma costi
+    reports.forEach(r => {
+      if (!r.commessa) return;
+
+      const id = r.commessa.id;
+
+      const costo = r.resources.reduce(
+        (s, res) => s + res.totalCost,
         0
       );
 
-      if (!map[commessaId]) {
-        map[commessaId] = {
-          name: r.commessa?.name || "Senza commessa",
-          total: 0
-        };
+      if (!map[id]) {
+        map[id] = { name: r.commessa.name, budget: 0, cost: 0 };
       }
 
-      map[commessaId].total += costoReport;
+      map[id].cost += costo;
     });
 
-    return Object.values(map);
-  }, [reports]);
+    return Object.values(map).map(c => {
+      const perc = c.budget > 0 ? c.cost / c.budget : 0;
+      const salValue = perc * c.budget;
+      const margin = c.budget - c.cost;
 
-  const totaleGenerale = useMemo(() => {
-    return costiPerCommessa.reduce((sum, c) => sum + c.total, 0);
-  }, [costiPerCommessa]);
+      return {
+        ...c,
+        perc,
+        salValue,
+        margin
+      };
+    });
+  }, [reports, commesse]);
 
   return (
     <div style={{ padding: 24 }}>
-      <h1>Dashboard Cantieri</h1>
-
-      <h2>Totale generale: € {totaleGenerale.toFixed(2)}</h2>
-
-      <h3 style={{ marginTop: 30 }}>Costi per commessa</h3>
+      <h1>Dashboard SAL lavori</h1>
 
       <table border="1" cellPadding="10" style={{ background: "#fff" }}>
         <thead>
           <tr>
             <th>Commessa</th>
-            <th>Totale €</th>
+            <th>Budget</th>
+            <th>Costi</th>
+            <th>SAL %</th>
+            <th>Valore SAL</th>
+            <th>Margine</th>
           </tr>
         </thead>
+
         <tbody>
-          {costiPerCommessa.map((c, i) => (
+          {data.map((c, i) => (
             <tr key={i}>
               <td>{c.name}</td>
-              <td>{c.total.toFixed(2)}</td>
+              <td>€ {c.budget.toFixed(2)}</td>
+              <td>€ {c.cost.toFixed(2)}</td>
+              <td>{(c.perc * 100).toFixed(1)}%</td>
+              <td>€ {c.salValue.toFixed(2)}</td>
+              <td style={{ color: c.margin >= 0 ? "green" : "red" }}>
+                € {c.margin.toFixed(2)}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {costiPerCommessa.length === 0 && (
-        <p style={{ marginTop: 20 }}>Nessun dato disponibile</p>
-      )}
+      {data.length === 0 && <p style={{ marginTop: 20 }}>Nessun dato</p>}
     </div>
   );
 }
