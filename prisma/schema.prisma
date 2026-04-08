@@ -11,22 +11,14 @@ model Commessa {
   id          String   @id @default(cuid())
   name        String
   description String?
-  budget      Float?   // 👈 NUOVO
+  budget      Float?
   createdAt   DateTime @default(now())
 
   reports     Report[]
+  ledger      Ledger[]
+  receipts    Receipt[]
 }
-model Invoice {
-  id          String   @id @default(cuid())
-  commessaId  String
-  commessa    Commessa @relation(fields: [commessaId], references: [id])
 
-  amount      Float
-  date        DateTime @default(now())
-  description String?
-
-  createdAt   DateTime @default(now())
-}
 model Resource {
   id        String   @id @default(cuid())
   name      String
@@ -35,7 +27,7 @@ model Resource {
   stock     Float?
   createdAt DateTime @default(now())
 
-  usages ReportResource[]
+  usages    ReportResource[]
 }
 
 model Report {
@@ -64,20 +56,22 @@ model ReportResource {
   @@index([reportId])
   @@index([resourceId])
 }
+
 model Ledger {
   id          String   @id @default(cuid())
   date        DateTime @default(now())
-  type        String   // ENTRATA / USCITA
+  type        String
   description String
   amount      Float
   commessaId  String?
   commessa    Commessa? @relation(fields: [commessaId], references: [id])
-
   createdAt   DateTime @default(now())
 }
+
 model Receipt {
   id          String   @id @default(cuid())
   fileUrl     String
+  fileName    String?
   amount      Float
   description String?
   date        DateTime @default(now())
