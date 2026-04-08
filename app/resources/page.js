@@ -37,13 +37,13 @@ export default function ResourcesPage() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        name: form.name,
-        type: form.type,
-        cost: form.cost ? parseFloat(form.cost) : null
-      })
+     body: JSON.stringify({
+  name: form.name,
+  type: form.type,
+  cost: form.cost ? parseFloat(form.cost) : null,
+  stock: form.stock ? parseFloat(form.stock) : null
+})
     });
-
     setForm({ name: "", type: "", cost: "" });
     loadResources();
   }
