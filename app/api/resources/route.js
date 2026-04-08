@@ -9,13 +9,13 @@ export async function POST(req) {
   const body = await req.json();
 
   const resource = await prisma.resource.create({
-    data: {
-      name: body.name,
-      type: body.type,
-      cost: body.cost ?? null,
-    },
-  });
-
+  data: {
+    name: body.name,
+    type: body.type,
+    cost: typeof body.cost === "number" ? body.cost : null,
+    stock: typeof body.stock === "number" ? body.stock : null // 👈 QUESTO
+  }
+});
   return Response.json(resource);
 }
 <input
