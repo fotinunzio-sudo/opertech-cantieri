@@ -26,10 +26,20 @@ export async function POST(req) {
         description: body.description || null
       }
     });
-
+commessa: body.commessaId
+  ? { connect: { id: body.commessaId } }
+  : undefined,
     return Response.json(commessa);
   } catch (error) {
     console.error("POST /api/commesse", error);
     return Response.json({ error: "Errore salvataggio commessa" }, { status: 500 });
   }
+}
+if (resource?.type === "materiale") {
+  await prisma.resource.update({
+    where: { id: r.id },
+    data: {
+      stock: (resource.stock || 0) - Number(r.quantity || 0)
+    }
+  });
 }
