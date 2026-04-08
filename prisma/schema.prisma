@@ -75,3 +75,15 @@ model Ledger {
 
   createdAt   DateTime @default(now())
 }
+model Receipt {
+  id          String   @id @default(cuid())
+  fileUrl     String
+  amount      Float
+  description String?
+  date        DateTime @default(now())
+
+  commessaId  String?
+  commessa    Commessa? @relation(fields: [commessaId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
