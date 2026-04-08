@@ -75,7 +75,12 @@ export default function ResourcesPage() {
           value={form.cost}
           onChange={(e) => setForm({ ...form, cost: e.target.value })}
         />
-
+<input
+  placeholder="Giacenza"
+  type="number"
+  value={form.stock}
+  onChange={(e) => setForm({ ...form, stock: e.target.value })}
+/>
         <button type="submit">Aggiungi</button>
       </form>
 
