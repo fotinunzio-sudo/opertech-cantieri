@@ -30,10 +30,10 @@ export default function RapportiniPage() {
   }
 
   useEffect(() => {
-  fetch("/api/rapportini")
-    .then(res => res.json())
-    .then(setReports);
-}, []);
+    loadResources();
+    loadReports();
+    loadCommesse();
+  }, []);
 
   function toggleResource(resource) {
     setSelectedResources((prev) => {
@@ -65,10 +65,18 @@ export default function RapportiniPage() {
     }));
   }
 
- const totale = reports.reduce((sum, r) => {
-  return sum + r.resources.reduce((s, res) => s + res.totalCost, 0);
-}, 0);
+  const total = useMemo(() => {
+    return Object.values(selectedResources).reduce(
+      (sum, r) => sum + r.quantity * r.unitCost,
+      0
+    );
   }, [selectedResources]);
+
+  const totaleReports = useMemo(() => {
+    return reports.reduce((sum, r) => {
+      return sum + r.resources.reduce((s, res) => s + res.totalCost, 0);
+    }, 0);
+  }, [reports]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -110,11 +118,18 @@ export default function RapportiniPage() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: 10 }}>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </div>
 
         <div style={{ marginBottom: 10 }}>
-          <select value={commessaId} onChange={(e) => setCommessaId(e.target.value)}>
+          <select
+            value={commessaId}
+            onChange={(e) => setCommessaId(e.target.value)}
+          >
             <option value="">Seleziona commessa</option>
             {commesse.map((c) => (
               <option key={c.id} value={c.id}>
@@ -147,7 +162,9 @@ export default function RapportiniPage() {
                   onChange={() => toggleResource(r)}
                 />
                 {" "}{r.name} ({r.type}) - € {r.cost || 0}
-                {r.type === "materiale" && r.stock !== null && r.stock !== undefined
+                {r.type === "materiale" &&
+                r.stock !== null &&
+                r.stock !== undefined
                   ? ` - giacenza ${r.stock}`
                   : ""}
               </label>
@@ -164,12 +181,13 @@ export default function RapportiniPage() {
           );
         })}
 
-        <h3>Costo totale: € {total.toFixed(2)}</h3>
+        <h3>Costo rapportino corrente: € {total.toFixed(2)}</h3>
 
         <button type="submit">Salva rapportino</button>
       </form>
 
       <h2 style={{ marginTop: 40 }}>Rapportini salvati</h2>
+      <h3>Totale costi complessivi: € {totaleReports.toFixed(2)}</h3>
 
       {reports.length === 0 && <p>Nessun rapportino</p>}
 
@@ -190,7 +208,8 @@ export default function RapportiniPage() {
           <ul>
             {r.resources.map((item) => (
               <li key={item.id}>
-                {item.resource.name} - q.tà {item.quantity} - € {item.totalCost.toFixed(2)}
+                {item.resource.name} - q.tà {item.quantity} - €{" "}
+                {item.totalCost.toFixed(2)}
               </li>
             ))}
           </ul>
