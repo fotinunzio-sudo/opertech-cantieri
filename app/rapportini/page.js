@@ -10,6 +10,7 @@ export default function RapportiniPage() {
   const [description, setDescription] = useState("");
   const [commessaId, setCommessaId] = useState("");
   const [selectedResources, setSelectedResources] = useState({});
+  const [filterCommessaId, setFilterCommessaId] = useState("");
 
   async function loadResources() {
     const res = await fetch("/api/resources");
@@ -72,11 +73,16 @@ export default function RapportiniPage() {
     );
   }, [selectedResources]);
 
+  const filteredReports = useMemo(() => {
+    if (!filterCommessaId) return reports;
+    return reports.filter((r) => r.commessa && r.commessa.id === filterCommessaId);
+  }, [reports, filterCommessaId]);
+
   const totaleReports = useMemo(() => {
-    return reports.reduce((sum, r) => {
+    return filteredReports.reduce((sum, r) => {
       return sum + r.resources.reduce((s, res) => s + res.totalCost, 0);
     }, 0);
-  }, [reports]);
+  }, [filteredReports]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -186,12 +192,34 @@ export default function RapportiniPage() {
         <button type="submit">Salva rapportino</button>
       </form>
 
+      <hr style={{ margin: "30px 0" }} />
+
+      <h2>Controllo costi</h2>
+
+      <div style={{ marginBottom: 16 }}>
+        <select
+          value={filterCommessaId}
+          onChange={(e) => setFilterCommessaId(e.target.value)}
+        >
+          <option value="">Tutte le commesse</option>
+          {commesse.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <h3>
+        Totale costi {filterCommessaId ? "commessa selezionata" : "complessivi"}:
+        {" "}€ {totaleReports.toFixed(2)}
+      </h3>
+
       <h2 style={{ marginTop: 40 }}>Rapportini salvati</h2>
-      <h3>Totale costi complessivi: € {totaleReports.toFixed(2)}</h3>
 
-      {reports.length === 0 && <p>Nessun rapportino</p>}
+      {filteredReports.length === 0 && <p>Nessun rapportino</p>}
 
-      {reports.map((r) => (
+      {filteredReports.map((r) => (
         <div
           key={r.id}
           style={{
