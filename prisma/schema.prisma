@@ -11,6 +11,7 @@ model Commessa {
   id          String   @id @default(cuid())
   name        String
   description String?
+  budget      Float?   // 👈 NUOVO
   createdAt   DateTime @default(now())
 
   reports     Report[]
