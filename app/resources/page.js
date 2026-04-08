@@ -99,6 +99,7 @@ export default function ResourcesPage() {
               <td>{r.name}</td>
               <td>{r.type}</td>
               <td>{r.cost ?? "-"}</td>
+              <td>{r.stock ?? "-"}</td>
             </tr>
           ))}
         </tbody>
