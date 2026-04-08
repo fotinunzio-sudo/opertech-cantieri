@@ -18,3 +18,9 @@ export async function POST(req) {
 
   return Response.json(resource);
 }
+<input
+  placeholder="Giacenza"
+  type="number"
+  value={form.stock}
+  onChange={(e) => setForm({ ...form, stock: e.target.value })}
+/>
