@@ -1,4 +1,8 @@
-import Tesseract from "tesseract.js";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 export async function POST(req) {
   try {
@@ -6,55 +10,52 @@ export async function POST(req) {
     const file = formData.get("file");
 
     if (!file) {
-      return Response.json(
-        { error: "File mancante" },
-        { status: 400 }
-      );
+      return Response.json({ error: "File mancante" }, { status: 400 });
     }
 
-    // 🔁 conversione file → buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const bytes = await file.arrayBuffer();
+    const base64 = Buffer.from(bytes).toString("base64");
 
-    // 🤖 OCR
-    const result = await Tesseract.recognize(buffer, "ita+eng", {
-      logger: (m) => console.log(m) // debug (puoi togliere)
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Sei un sistema che estrae dati da scontrini. Rispondi SOLO in JSON."
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Estrai: totale, data, fornitore. Rispondi JSON."
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64}`
+              }
+            }
+          ]
+        }
+      ]
     });
 
-    const text = result.data.text;
+    const text = response.choices[0].message.content;
 
-    // 🔍 ESTRAZIONE IMPORTO (più robusta)
-    const amountMatches = text.match(/(\d+[.,]\d{2})/g);
+    let parsed = {};
 
-    let amount = null;
-
-    if (amountMatches && amountMatches.length > 0) {
-      // prende l'importo più alto (di solito il totale)
-      const values = amountMatches.map(v =>
-        parseFloat(v.replace(",", "."))
-      );
-
-      amount = Math.max(...values);
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return Response.json({ raw: text });
     }
 
-    // 🔍 ESTRAZIONE DATA
-    const dateMatch =
-      text.match(/\d{2}\/\d{2}\/\d{4}/) ||
-      text.match(/\d{2}-\d{2}-\d{4}/);
+    return Response.json(parsed);
 
-    const date = dateMatch ? dateMatch[0] : null;
-
-    return Response.json({
-      rawText: text,
-      amount,
-      date
-    });
   } catch (error) {
-    console.error("OCR ERROR:", error);
-
-    return Response.json(
-      { error: "Errore OCR" },
-      { status: 500 }
-    );
+    console.error("OCR AI ERROR:", error);
+    return Response.json({ error: "Errore OCR AI" }, { status: 500 });
   }
 }
