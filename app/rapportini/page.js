@@ -9,7 +9,9 @@ export default function RapportiniPage() {
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [selectedResources, setSelectedResources] = useState([]);
-
+  
+  const [commesse, setCommesse] = useState([]);
+  const [commessaId, setCommessaId] = useState("");
   async function loadResources() {
     const res = await fetch("/api/resources");
     const data = await res.json();
